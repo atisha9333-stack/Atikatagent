@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- Exclude local notification logs and Room database from cloud backups for strict privacy -->
+    <exclude domain="database" path="." />
+    <exclude domain="datastore" path="." />
+</full-backup-content>

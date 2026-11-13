@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "770572640746",
+    "project_id": "atik-bcebd",
+    "storage_bucket": "atik-bcebd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:770572640746:android:fd1b27742f5128d23c5293",
+        "android_client_info": {
+          "package_name": "com.atik.aiagent"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA1bIrOqpCAy4zDxVLlVSMUtR0P8bvAKz0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

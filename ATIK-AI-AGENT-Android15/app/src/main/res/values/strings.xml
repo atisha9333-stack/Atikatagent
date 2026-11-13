@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">ATIK AI AGENT</string>
+    <string name="notification_listener_label">ATIK AI AGENT Notification Bridge</string>
+    <string name="developer_credit">Developer: ATIK</string>
+</resources>
