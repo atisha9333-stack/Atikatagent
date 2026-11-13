@@ -4,8 +4,10 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -44,6 +46,7 @@ fun XiaomiGuideScreen(
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold
         )
+
         Text(
             text = "Detected Device: ${XiaomiDeviceHelper.deviceSummary()}",
             color = AtikColors.AccentCyan,
@@ -102,14 +105,30 @@ private fun GuideStepCard(
         border = BorderStroke(1.dp, AtikColors.HairlineBorder),
         modifier = Modifier.fillMaxWidth()
     ) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(text = step, color = AtikColors.TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
-            Text(text = body, color = AtikColors.TextSecondary, fontSize = 12.sp)
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = step,
+                color = AtikColors.TextPrimary,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 14.sp
+            )
+            Text(
+                text = body,
+                color = AtikColors.TextSecondary,
+                fontSize = 12.sp
+            )
             OutlinedButton(
                 onClick = onClick,
                 border = BorderStroke(1.dp, AtikColors.AccentPurple)
             ) {
-                Text(buttonText, color = AtikColors.TextPrimary, fontSize = 12.sp)
+                Text(
+                    buttonText,
+                    color = AtikColors.TextPrimary,
+                    fontSize = 12.sp
+                )
             }
         }
     }
