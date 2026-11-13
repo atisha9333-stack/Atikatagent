@@ -4,23 +4,19 @@ import android.app.Notification
 import android.app.PendingIntent
 import android.app.RemoteInput
 import android.os.Build
+import android.os.Parcelable
 import android.service.notification.StatusBarNotification
 import androidx.core.app.NotificationCompat
 import com.atik.aiagent.data.model.ParsedNotification
 import com.atik.aiagent.data.model.ReplyCapability
 import com.atik.aiagent.data.model.SupportedApp
 
-/**
- * Parses incoming Messenger, imo, and local Test Bench notifications using ONLY
- * public Android SDK Notification APIs. No hidden APIs, no reflection, no Accessibility scraping.
- */
 object NotificationParser {
 
     fun parse(sbn: StatusBarNotification): ParsedNotification? {
         val supportedApp = SupportedApp.fromPackage(sbn.packageName) ?: return null
         val notification = sbn.notification ?: return null
 
-        // Ignore group summary containers and ongoing VoIP/call notifications
         if ((notification.flags and Notification.FLAG_GROUP_SUMMARY) != 0) return null
         if ((notification.flags and Notification.FLAG_ONGOING_EVENT) != 0) return null
         if (notification.category == Notification.CATEGORY_CALL) return null
@@ -33,17 +29,13 @@ object NotificationParser {
 
         val messageText = extractBestMessageText(extras)
         if (title.isBlank() && messageText.isBlank()) return null
-
-        // Skip self-sent echo messages inside MessagingStyle if sender is "You"
         if (title.equals("You", ignoreCase = true) || title == "আপনি") return null
 
         val replyAction = findReplyAction(notification)
         val capability = if (replyAction != null) ReplyCapability.SUPPORTED else ReplyCapability.UNAVAILABLE
         val unavailableReason = if (replyAction == null) {
-            "App notification does not expose an inline RemoteInput reply action (e.g., media-only, reaction, or imo call/alert banner)."
-        } else {
-            null
-        }
+            "App notification does not expose an inline RemoteInput reply action."
+        } else null
 
         return ParsedNotification(
             notificationKey = sbn.key,
@@ -66,9 +58,19 @@ object NotificationParser {
         val bigText = extras.getCharSequence(Notification.EXTRA_BIG_TEXT)?.toString()?.trim()
         val text = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString()?.trim()
 
-        val messagingMessages = NotificationCompat.MessagingStyle.Message
-            .getMessagesFromBundleArray(extras.getParcelableArray(Notification.EXTRA_MESSAGES))
-        val latestStyleText = messagingMessages.lastOrNull()?.text?.toString()?.trim()
+        val messages = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            extras.getParcelableArray(Notification.EXTRA_MESSAGES, Parcelable::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            extras.getParcelableArray(Notification.EXTRA_MESSAGES)
+        }
+
+        val latestStyleText = messages
+            ?.mapNotNull { item ->
+                val bundle = item as? android.os.Bundle
+                bundle?.getCharSequence("text")?.toString()?.trim()
+            }
+            ?.lastOrNull { it.isNotBlank() }
 
         return when {
             !latestStyleText.isNullOrBlank() -> latestStyleText
@@ -86,7 +88,6 @@ object NotificationParser {
     private fun findReplyAction(notification: Notification): ResolvedReplyAction? {
         val actions = notification.actions ?: return null
 
-        // Priority 1: Explicit semantic reply action (Android 9+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             for (action in actions) {
                 val remoteInputs = action.remoteInputs
@@ -99,12 +100,10 @@ object NotificationParser {
             }
         }
 
-        // Priority 2: Any action carrying free-form RemoteInput
         for (action in actions) {
             val remoteInputs = action.remoteInputs
             if (action.actionIntent != null && !remoteInputs.isNullOrEmpty()) {
-                val supportsFreeText = remoteInputs.any { it.allowFreeFormInput }
-                if (supportsFreeText) {
+                if (remoteInputs.any { it.allowFreeFormInput }) {
                     return ResolvedReplyAction(action.actionIntent, remoteInputs)
                 }
             }
